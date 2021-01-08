@@ -5,6 +5,11 @@
                 "url": "assets/Level.js",
                 "type": "sceneFile",
                 "key": "Level"
+            },
+            {
+                "url": "assets/background/mountains.png",
+                "type": "image",
+                "key": "mountains"
             }
         ]
     },

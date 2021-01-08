@@ -5,7 +5,22 @@
         "preloadPackFiles": [],
         "sceneKey": "Level"
     },
-    "displayList": [],
+    "displayList": [
+        {
+            "type": "TileSprite",
+            "id": "3323cb14-de76-4b74-bca8-5c72e4ecc5d2",
+            "label": "mountains",
+            "scope": "PUBLIC",
+            "components": [],
+            "texture": {
+                "key": "mountains"
+            },
+            "x": 407,
+            "y": 221,
+            "width": 819,
+            "height": 231
+        }
+    ],
     "plainObjects": [],
     "meta": {
         "app": "Phaser Editor 2D - Scene Editor",

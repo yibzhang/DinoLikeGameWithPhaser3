@@ -90,6 +90,7 @@ class HorseRunning extends Phaser.Scene {
     this.player.setOrigin(0, 1);
     this.player.setCollideWorldBounds(true);
     this.player.body.setAllowGravity(true);
+    this.player.setGravityY(150);
 
     this.anims.create({
       key: 'run',

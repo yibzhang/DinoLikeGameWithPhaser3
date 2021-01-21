@@ -1,28 +1,3 @@
-// class StartMenu extends Phaser.Scene {
-//   constructor() {
-//     super();
-
-//     this.startText;
-
-//     Phaser.Scene.call(this, { key: 'StartMenu', active: true });
-//     // Phaser.Scene.call(this, 'StartMenu')
-//   }
-//   preload() { }
-//   create() {
-//     this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { font: '36px Courier', fill: '#000000' });
-//     this.startText.setOrigin(0.5);
-//     this.startText.setInteractive();
-
-//     this.startText.on('pointerdown', function () {
-//       console.log('hit it');
-//       // this.scene.sendToBack();
-//       // this.scene.start('HorseRunning');
-//       // this.scene.bringToTop();
-//     }, this);
-//   }
-//   update() { }
-// }
-
 class HorseRunning extends Phaser.Scene {
   constructor() {
     super();
@@ -32,6 +7,7 @@ class HorseRunning extends Phaser.Scene {
     this.enemy;
     this.clouds;
     this.mountains;
+    this.grassGroup;
     this.score = 0;
     this.scoreText;
     this.startText;
@@ -76,14 +52,13 @@ class HorseRunning extends Phaser.Scene {
     this.load.spritesheet('player', 'assets/player/player_horse_sheet.png', { frameWidth: 325, frameHeight: 324 });
     this.load.image('cloud', 'assets/background/cloud.png');
     this.load.image('mountains', 'assets/background/mountains.png');
-    //this.load.image('grass-small', 'assets/background/grass_small.png');
-    //this.load.image('grass-big', 'assets/background/grass_big.png');
+    this.load.image('grass-small', 'assets/background/grass_small.png');
     this.load.image('enemy', 'assets/enemy/arrow.png');
     this.score = 0;
   }
 
   create() {
-    this.physics.world.bounds.width = 10 * config.width;
+    this.physics.world.bounds.width = config.width;
     this.physics.world.bounds.height = config.height;
 
     this.frame = this.add.image(config.width / 2, config.height / 2, 'frame').setDisplaySize(config.width, config.height);
@@ -96,6 +71,12 @@ class HorseRunning extends Phaser.Scene {
 
     this.mountains = this.add.tileSprite(0.5 * config.width, 0.4 * config.height, 0, 0, 'mountains').setDisplaySize(config.width, 0.5 * config.height);
     this.clouds = this.add.tileSprite(0.5 * config.width, 0.2 * config.height, 0, 0, 'cloud').setDisplaySize(config.width, 0.3 * config.height);
+    this.grassGroup = this.add.group({ key: 'grass-small', repeat: 3 });
+    this.grassGroup.children.iterate((grass) => {
+      grass.setScale(Phaser.Math.RND.between(5, 10) / 10);
+      grass.x = Phaser.Math.RND.between(0, 10) / 10 * config.width;
+      grass.y = Phaser.Math.RND.between(7, 9) / 10 * config.height;
+    }, this)
 
     this.enemy = this.physics.add.sprite(config.width, config.height, 'enemy');
     this.enemy.setScale(0.12);
@@ -155,6 +136,14 @@ class HorseRunning extends Phaser.Scene {
       // background animes
       this.mountains.tilePositionX += 2;
       this.clouds.tilePositionX += 1;
+      this.grassGroup.children.iterate((grass) => {
+        grass.x -= 1;
+        if (grass.x + grass.width < 0) {
+          grass.setScale(Phaser.Math.RND.between(5, 10) / 10);
+          grass.x = config.width;
+          grass.y = Phaser.Math.RND.between(7, 9) / 10 * config.height;
+        }
+      }, this);
       // add score
       if (!Phaser.Geom.Rectangle.Overlaps(this.physics.world.bounds, this.enemy.getBounds())) {
         this.addScore();

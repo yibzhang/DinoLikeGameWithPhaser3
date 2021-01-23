@@ -146,7 +146,8 @@ class HorseRunning extends Phaser.Scene {
         }
       }, this);
       // add score
-      if (!Phaser.Geom.Rectangle.Overlaps(this.physics.world.bounds, this.enemy.getBounds())) {
+      // if (!Phaser.Geom.Rectangle.Overlaps(this.physics.world.bounds, this.enemy.getBounds())) {
+      if (this.enemy.x < 0) {
         this.addScore();
         this.resetEnemy();
       }

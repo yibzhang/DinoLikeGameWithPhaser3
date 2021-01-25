@@ -12,6 +12,10 @@ class HorseRunning extends Phaser.Scene {
     this.scoreText;
     this.startText;
     this.gameover = true;
+    this.timeCounter = 0;
+    // Adjustable parameters
+    this.spawnTime = 100;
+    this.maxSpawnNum = 3;
 
     Phaser.Scene.call(this, { key: 'HorseRunning', active: true });
   }
@@ -26,18 +30,26 @@ class HorseRunning extends Phaser.Scene {
     this.scoreText.setText(['Score : ' + this.score]);
   }
 
-  addEnemy() {
-    this.enemyGroup.create(Phaser.Math.RND.between(90, 100) / 100 * config.width, config.height, 'enemy')
-      .setScale(Phaser.Math.RND.between(5, 15) / 100)
-      .setOrigin(0, 1)
-      .body.setAllowGravity(false)
-    if (!this.gameover) {
-      this.enemyGroup.setVelocityX(-300)
+  addEnemies() {
+    // add randome numbers of enemies into enemyGroup
+    for (var i = 0; i < Phaser.Math.RND.between(1, this.maxSpawnNum); i++) {
+      this.addEnemy()
     }
   }
 
-  removeEnemy(enemy) {
-    this.enemyGroup.remove(enemy);
+  addEnemy() {
+    this.enemyGroup.create(Phaser.Math.RND.between(100, 110) / 100 * config.width, config.height, 'enemy');
+    let enemies = this.enemyGroup.getChildren();
+    let enemy = enemies[enemies.length - 1];
+    // display scale
+    enemy.setScale(Phaser.Math.RND.between(8, 15) / 100);
+    enemy.setOrigin(0, 1);
+    // collider body size
+    enemy.setSize(enemy.width, enemy.height / 3);
+    enemy.body.setAllowGravity(false);
+    if (!this.gameover) {
+      enemy.setVelocityX(-300 - this.score * 5);
+    }
   }
 
   gameStart() {
@@ -89,15 +101,13 @@ class HorseRunning extends Phaser.Scene {
     }, this)
 
     this.enemyGroup = this.physics.add.group();
-    this.addEnemy();
-    this.addEnemy();
 
     this.player = this.physics.add.sprite(0.2 * config.width, config.height, 'player');
     this.player.setScale(0.25);
     this.player.setOrigin(0, 1);
+    this.player.setSize(this.player.width / 2, this.player.height);
     this.player.setCollideWorldBounds(true);
     this.player.body.setAllowGravity(true);
-    // this.player.setGravityY(150);
 
     this.anims.create({
       key: 'run',
@@ -119,7 +129,7 @@ class HorseRunning extends Phaser.Scene {
       this.input.on('pointerdown', function () {
         if (this.player.body.blocked.down) {
           this.player.anims.play('jump');
-          this.player.setVelocityY(-300);
+          this.player.setVelocityY(-400);
         }
       }, this);
     }
@@ -151,19 +161,26 @@ class HorseRunning extends Phaser.Scene {
         grass.x -= 1;
         if (grass.x + grass.width < 0) {
           grass.setScale(Phaser.Math.RND.between(5, 10) / 10);
-          grass.x = config.width;
+          grass.x = Phaser.Math.RND.between(10, 14) / 10 * config.width;
           grass.y = Phaser.Math.RND.between(7, 9) / 10 * config.height;
         }
       }, this);
 
       // add score
-      this.enemyGroup.children.iterate((enemy) => {
+      this.enemyGroup.getChildren().forEach((enemy) => {
         if (enemy.x < 0) {
           this.addScore();
-          this.removeEnemy(enemy);
-          this.addEnemy();
+          this.enemyGroup.remove(enemy, true);
         }
-      }, this)
+      })
+
+      // spawn enemies
+      if (this.timeCounter > this.spawnTime) {
+        this.timeCounter = 0;
+        this.addEnemies();
+      } else {
+        this.timeCounter += 1;
+      }
     }
   }
 }
@@ -176,8 +193,8 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 500 },
-      debug: true
+      gravity: { y: 900 },
+      debug: false,
     }
   },
   scene: [HorseRunning]

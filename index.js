@@ -26,6 +26,20 @@ class HorseRunning extends Phaser.Scene {
     this.scoreText.setText(['Score : ' + this.score]);
   }
 
+  addEnemy() {
+    this.enemyGroup.create(Phaser.Math.RND.between(90, 100) / 100 * config.width, config.height, 'enemy')
+      .setScale(Phaser.Math.RND.between(5, 15) / 100)
+      .setOrigin(0, 1)
+      .body.setAllowGravity(false)
+    if (!this.gameover) {
+      this.enemyGroup.setVelocityX(-300)
+    }
+  }
+
+  removeEnemy(enemy) {
+    this.enemyGroup.remove(enemy);
+  }
+
   gameStart() {
     this.gameover = false;
     this.score = 0;
@@ -75,10 +89,8 @@ class HorseRunning extends Phaser.Scene {
     }, this)
 
     this.enemyGroup = this.physics.add.group();
-    this.enemyGroup.create(config.width, config.height, 'enemy')
-      .setScale(0.12)
-      .setOrigin(0, 1)
-      .body.setAllowGravity(false)
+    this.addEnemy();
+    this.addEnemy();
 
     this.player = this.physics.add.sprite(0.2 * config.width, config.height, 'player');
     this.player.setScale(0.25);
@@ -103,7 +115,6 @@ class HorseRunning extends Phaser.Scene {
 
     if (!this.gameover) {
       this.startText.setVisible(false)
-      this.enemyGroup.setVelocityX(-300)
       // if game is not over, click player jumps.
       this.input.on('pointerdown', function () {
         if (this.player.body.blocked.down) {
@@ -149,8 +160,8 @@ class HorseRunning extends Phaser.Scene {
       this.enemyGroup.children.iterate((enemy) => {
         if (enemy.x < 0) {
           this.addScore();
-          enemy.x = config.width;
-          enemy.setVelocityX(-300 - Math.trunc(this.score / 10) * 100);
+          this.removeEnemy(enemy);
+          this.addEnemy();
         }
       }, this)
     }
@@ -166,7 +177,7 @@ let config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 500 },
-      debug: false
+      debug: true
     }
   },
   scene: [HorseRunning]

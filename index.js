@@ -13,6 +13,11 @@ class HorseRunning extends Phaser.Scene {
     this.startText;
     this.gameover = true;
     this.timeCounter = 0;
+    this.horseRunAudio;
+    this.horseDieAudio;
+    this.horseJumpAudio;
+    this.goalAudio;
+    this.backgroundAudio;
     // Adjustable parameters
     this.spawnTime = 100;
     this.maxSpawnNum = 3;
@@ -28,6 +33,7 @@ class HorseRunning extends Phaser.Scene {
   addScore() {
     this.score += 1;
     this.scoreText.setText(['Score : ' + this.score]);
+    this.goalAudio.play();
   }
 
   addEnemies() {
@@ -64,6 +70,9 @@ class HorseRunning extends Phaser.Scene {
     this.player.setVelocity(0);
     this.player.anims.stop();
     this.player.body.setAllowGravity(false);
+    this.horseDieAudio.play();
+    this.horseRunAudio.pause();
+    this.backgroundAudio.stop();
     this.enemyGroup.children.iterate((enemy) => {
       enemy.setVelocity(0)
     }, this);
@@ -76,6 +85,11 @@ class HorseRunning extends Phaser.Scene {
     this.load.image('mountains', 'assets/background/mountains.png');
     this.load.image('grass-small', 'assets/background/grass_small.png');
     this.load.image('enemy', 'assets/enemy/arrow.png');
+    this.load.audio('horse-run', 'assets/audio/horse-run.wav');
+    this.load.audio('horse-die', 'assets/audio/horse-die.wav');
+    this.load.audio('horse-jump', 'assets/audio/horse-jump.wav');
+    this.load.audio('goal', 'assets/audio/goal.wav');
+    this.load.audio('background', 'assets/audio/background.mp3');
     this.score = 0;
   }
 
@@ -109,6 +123,12 @@ class HorseRunning extends Phaser.Scene {
     this.player.setCollideWorldBounds(true);
     this.player.body.setAllowGravity(true);
 
+    this.horseRunAudio = this.sound.add('horse-run');
+    this.horseDieAudio = this.sound.add('horse-die');
+    this.horseJumpAudio = this.sound.add('horse-jump');
+    this.goalAudio = this.sound.add('goal');
+    this.backgroundAudio = this.sound.add('background');
+
     this.anims.create({
       key: 'run',
       frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
@@ -124,12 +144,16 @@ class HorseRunning extends Phaser.Scene {
     });
 
     if (!this.gameover) {
-      this.startText.setVisible(false)
+      this.startText.setVisible(false);
+      this.horseRunAudio.play({ loop: true });
+      this.backgroundAudio.play({loop: true});
       // if game is not over, click player jumps.
       this.input.on('pointerdown', function () {
         if (this.player.body.blocked.down) {
           this.player.anims.play('jump');
           this.player.setVelocityY(-400);
+          this.horseJumpAudio.play();
+          this.horseRunAudio.mute = true;
         }
       }, this);
     }
@@ -152,11 +176,12 @@ class HorseRunning extends Phaser.Scene {
       // player running animes
       if (this.player.body.blocked.down) {
         this.player.anims.play('run', true);
+        this.horseRunAudio.mute = false;
       }
 
       // background animes
-      this.mountains.tilePositionX += 2;
-      this.clouds.tilePositionX += 1;
+      this.mountains.tilePositionX += 1;
+      this.clouds.tilePositionX += 2;
       this.grassGroup.children.iterate((grass) => {
         grass.x -= 1;
         if (grass.x + grass.width < 0) {

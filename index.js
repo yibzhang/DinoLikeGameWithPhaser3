@@ -19,7 +19,7 @@ class HorseRunning extends Phaser.Scene {
     this.goalAudio;
     this.backgroundAudio;
     // Adjustable parameters
-    this.spawnTime = 100;
+    this.spawnTime = 200;
     this.maxSpawnNum = 3;
 
     Phaser.Scene.call(this, { key: 'HorseRunning', active: true });
@@ -36,25 +36,39 @@ class HorseRunning extends Phaser.Scene {
     this.goalAudio.play();
   }
 
-  addEnemies() {
-    // add randome numbers of enemies into enemyGroup
-    for (var i = 0; i < Phaser.Math.RND.between(1, this.maxSpawnNum); i++) {
-      this.addEnemy()
-    }
+  addEnemyLevel1() {
+    this.addEnemy(1, 10, 10);
   }
 
-  addEnemy() {
-    this.enemyGroup.create(Phaser.Math.RND.between(100, 110) / 100 * config.width, config.height, 'enemy');
-    let enemies = this.enemyGroup.getChildren();
-    let enemy = enemies[enemies.length - 1];
-    // display scale
-    enemy.setScale(Phaser.Math.RND.between(8, 15) / 100);
-    enemy.setOrigin(0, 1);
-    // collider body size
-    enemy.setSize(enemy.width, enemy.height / 3);
-    enemy.body.setAllowGravity(false);
-    if (!this.gameover) {
-      enemy.setVelocityX(-300 - this.score * 5);
+  addEnemyLevel2() {
+    this.addEnemy(2, 12, 12);
+  }
+
+  addEnemyLevel3() {
+    this.addEnemy(3, 15, 15);
+  }
+
+  addEnemyLevelMax() {
+    this.addEnemy(5, 15, 15);
+  }
+
+  // maxSpawnNum: 1 ~ 5
+  // maxWidth: 10 ~ 15
+  // maxWidth: 10 ~ 15
+  addEnemy(maxSpawnNum, maxWidth, maxHeight) {
+    for (var i = 0; i < Phaser.Math.RND.between(1, maxSpawnNum); i++) {
+      this.enemyGroup.create(Phaser.Math.RND.between(100, 110) / 100 * config.width, config.height, 'enemy');
+      let enemies = this.enemyGroup.getChildren();
+      let enemy = enemies[enemies.length - 1];
+      // display scale
+      enemy.setDisplaySize(config.width * Phaser.Math.RND.between(10, maxWidth) / 350, config.height * Phaser.Math.RND.between(10, maxHeight) / 80);
+      enemy.setOrigin(0, 1);
+      // collider body size
+      enemy.setSize(enemy.width, enemy.height / 3);
+      enemy.body.setAllowGravity(false);
+      if (!this.gameover) {
+        enemy.setVelocityX(-400 - this.score * 5);
+      }
     }
   }
 
@@ -100,8 +114,8 @@ class HorseRunning extends Phaser.Scene {
     this.frame = this.add.image(config.width / 2, config.height / 2, 'frame').setDisplaySize(config.width, config.height);
     this.frame.setScrollFactor(0);
 
-    this.scoreText = this.add.text(0, 0, ['Score : ' + this.score], { font: '16px Courier', fill: '#000000' });
-    this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { font: '36px Courier', fill: '#000000' });
+    this.scoreText = this.add.text(0, 0, ['Score : ' + this.score], { font: '64px Courier', fill: '#000000' });
+    this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { font: '128px Courier', fill: '#000000' });
     this.startText.setOrigin(0.5);
     this.startText.setInteractive();
 
@@ -109,7 +123,7 @@ class HorseRunning extends Phaser.Scene {
     this.clouds = this.add.tileSprite(0.5 * config.width, 0.2 * config.height, 0, 0, 'cloud').setDisplaySize(config.width, 0.3 * config.height);
     this.grassGroup = this.add.group({ key: 'grass-small', repeat: 3 });
     this.grassGroup.children.iterate((grass) => {
-      grass.setScale(Phaser.Math.RND.between(5, 10) / 10);
+      grass.setDisplaySize(Phaser.Math.RND.between(8, 10) * config.width / 150, Phaser.Math.RND.between(8, 12) * config.height / 150);
       grass.x = Phaser.Math.RND.between(0, 10) / 10 * config.width;
       grass.y = Phaser.Math.RND.between(7, 9) / 10 * config.height;
     }, this)
@@ -117,9 +131,10 @@ class HorseRunning extends Phaser.Scene {
     this.enemyGroup = this.physics.add.group();
 
     this.player = this.physics.add.sprite(0.2 * config.width, config.height, 'player');
-    this.player.setScale(0.25);
+    this.player.setDisplaySize(config.width / 8, config.height / 5);
+    // this.player.setScale(0.25);
     this.player.setOrigin(0, 1);
-    this.player.setSize(this.player.width / 2, this.player.height);
+    this.player.setSize(this.player.width / 2.5, this.player.height);
     this.player.setCollideWorldBounds(true);
     this.player.body.setAllowGravity(true);
 
@@ -146,12 +161,12 @@ class HorseRunning extends Phaser.Scene {
     if (!this.gameover) {
       this.startText.setVisible(false);
       this.horseRunAudio.play({ loop: true });
-      this.backgroundAudio.play({loop: true});
+      this.backgroundAudio.play({ loop: true });
       // if game is not over, click player jumps.
       this.input.on('pointerdown', function () {
         if (this.player.body.blocked.down) {
           this.player.anims.play('jump');
-          this.player.setVelocityY(-400);
+          this.player.setVelocityY(-800);
           this.horseJumpAudio.play();
           this.horseRunAudio.mute = true;
         }
@@ -185,7 +200,7 @@ class HorseRunning extends Phaser.Scene {
       this.grassGroup.children.iterate((grass) => {
         grass.x -= 1;
         if (grass.x + grass.width < 0) {
-          grass.setScale(Phaser.Math.RND.between(5, 10) / 10);
+          grass.setDisplaySize(Phaser.Math.RND.between(8, 10) * config.width / 150, Phaser.Math.RND.between(8, 12) * config.height / 150);
           grass.x = Phaser.Math.RND.between(10, 14) / 10 * config.width;
           grass.y = Phaser.Math.RND.between(7, 9) / 10 * config.height;
         }
@@ -199,10 +214,13 @@ class HorseRunning extends Phaser.Scene {
         }
       })
 
-      // spawn enemies
+      // spawn enemies      
       if (this.timeCounter > this.spawnTime) {
         this.timeCounter = 0;
-        this.addEnemies();
+        if (this.score < 4) { this.addEnemyLevel1(); }
+        else if (this.score < 20) { this.addEnemyLevel2(); }
+        else if (this.score < 30) { this.addEnemyLevel3(); }
+        else { this.addEnemyLevelMax(); }
       } else {
         this.timeCounter += 1;
       }
@@ -213,12 +231,16 @@ class HorseRunning extends Phaser.Scene {
 // config
 let config = {
   type: Phaser.AUTO,
-  width: 700,
-  height: 300,
+  width: 1920,
+  height: 1080,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 900 },
+      gravity: { y: 1200 },
       debug: false,
     }
   },

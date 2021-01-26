@@ -5,21 +5,23 @@ class HorseRunning extends Phaser.Scene {
     this.frame;
     this.player;
     this.enemyGroup;
+
     this.clouds;
     this.mountains;
     this.grassGroup;
+
     this.score = 0;
     this.scoreText;
     this.startText;
     this.gameover = true;
     this.timeCounter = 0;
+    this.spawnTime = 200;
+
     this.horseRunAudio;
     this.horseDieAudio;
     this.horseJumpAudio;
     this.goalAudio;
     this.backgroundAudio;
-    // Adjustable parameters
-    this.spawnTime = 200;
 
     Phaser.Scene.call(this, { key: 'HorseRunning', active: true });
   }
@@ -35,28 +37,10 @@ class HorseRunning extends Phaser.Scene {
     this.goalAudio.play();
   }
 
-  addEnemyLevel1() {
-    this.addEnemy(1, 10, 10);
-  }
-
-  addEnemyLevel2() {
-    this.addEnemy(2, 12, 12);
-  }
-
-  addEnemyLevel3() {
-    this.addEnemy(3, 15, 15);
-  }
-
-  addEnemyLevelMax() {
-    this.addEnemy(5, 15, 15);
-  }
-
-  // maxSpawnNum: 1 ~ 5
-  // maxWidth: 10 ~ 15
-  // maxWidth: 10 ~ 15
-  addEnemy(maxSpawnNum, maxWidth, maxHeight) {
-    for (var i = 0; i < Phaser.Math.RND.between(1, maxSpawnNum); i++) {
-      this.enemyGroup.create(Phaser.Math.RND.between(100, 110) / 100 * config.width, config.height, 'enemy');
+  // initially spawn num of enemies with random width and height
+  initEnemy(num, maxWidth, maxHeight) {
+    for (var i = 0; i < num; i++) {
+      this.enemyGroup.create(Phaser.Math.RND.between(105, 115) / 100 * config.width, config.height, 'enemy');
       let enemies = this.enemyGroup.getChildren();
       let enemy = enemies[enemies.length - 1];
       // display scale
@@ -65,10 +49,29 @@ class HorseRunning extends Phaser.Scene {
       // collider body size
       enemy.setSize(enemy.width, enemy.height / 3);
       enemy.body.setAllowGravity(false);
-      if (!this.gameover) {
-        enemy.setVelocityX(-400 - this.score * 5);
+    }
+  }
+
+  // give num of enemies x velocity
+  startEnemy(num) {
+    let enemies = this.enemyGroup.getChildren();
+    let counter = 0;
+    for (var i = 0; i < enemies.length; i++) {
+      if (counter < num && !enemies[i].body.velocity.x) {
+        counter += 1;
+        enemies[i].setVelocityX(-400 - this.score * 5);
       }
     }
+  }
+
+  resetEnemy(enemy, maxWidth, maxHeight) {
+    enemy.x = Phaser.Math.RND.between(105, 115) / 100 * config.width;
+    // display scale
+    enemy.setDisplaySize(config.width * Phaser.Math.RND.between(10, maxWidth) / 350, config.height * Phaser.Math.RND.between(10, maxHeight) / 80);
+    enemy.setOrigin(0, 1);
+    // collider body size
+    enemy.setSize(enemy.width, enemy.height / 3);
+    enemy.setVelocityX(0);
   }
 
   gameStart() {
@@ -94,9 +97,9 @@ class HorseRunning extends Phaser.Scene {
   loadFont(name, url) {
     var newFont = new FontFace(name, `url(${url})`);
     newFont.load().then(function (loaded) {
-        document.fonts.add(loaded);
+      document.fonts.add(loaded);
     }).catch(function (error) {
-        return error;
+      return error;
     });
   }
 
@@ -138,6 +141,8 @@ class HorseRunning extends Phaser.Scene {
     }, this)
 
     this.enemyGroup = this.physics.add.group();
+    // Initialize 10 enemies in the pool, velocity is 0
+    this.initEnemy(15, 15, 15);
 
     this.player = this.physics.add.sprite(0.2 * config.width, config.height, 'player');
     this.player.setDisplaySize(config.width / 8, config.height / 5);
@@ -215,20 +220,23 @@ class HorseRunning extends Phaser.Scene {
       }, this);
 
       // add score
-      this.enemyGroup.getChildren().forEach((enemy) => {
+      this.enemyGroup.children.iterate((enemy) => {
         if (enemy.x < 0) {
           this.addScore();
-          this.enemyGroup.remove(enemy, true);
+          this.resetEnemy(enemy, 15, 15)
         }
       })
 
       // spawn enemies      
       if (this.timeCounter > this.spawnTime) {
+        this.spawnTime = 400 * Phaser.Math.RND.between(150, 200) / (400 + this.score * 5)
         this.timeCounter = 0;
-        if (this.score < 4) { this.addEnemyLevel1(); }
-        else if (this.score < 20) { this.addEnemyLevel2(); }
-        else if (this.score < 30) { this.addEnemyLevel3(); }
-        else { this.addEnemyLevelMax(); }
+        // set velocity for several enemies in the pool
+        if (this.score < 5) { this.startEnemy(1) }
+        else if (this.score < 15) { this.startEnemy(Phaser.Math.RND.between(1, 2)) }
+        else if (this.score < 25) { this.startEnemy(Phaser.Math.RND.between(1, 3)) }
+        else if (this.score < 35) { this.startEnemy(Phaser.Math.RND.between(1, 4)) }
+        else { this.startEnemy(Phaser.Math.RND.between(1, 5)) }
       } else {
         this.timeCounter += 1;
       }

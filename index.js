@@ -20,7 +20,6 @@ class HorseRunning extends Phaser.Scene {
     this.backgroundAudio;
     // Adjustable parameters
     this.spawnTime = 200;
-    this.maxSpawnNum = 3;
 
     Phaser.Scene.call(this, { key: 'HorseRunning', active: true });
   }
@@ -92,6 +91,15 @@ class HorseRunning extends Phaser.Scene {
     }, this);
   }
 
+  loadFont(name, url) {
+    var newFont = new FontFace(name, `url(${url})`);
+    newFont.load().then(function (loaded) {
+        document.fonts.add(loaded);
+    }).catch(function (error) {
+        return error;
+    });
+  }
+
   preload() {
     this.load.image('frame', 'assets/background/frame.png');
     this.load.spritesheet('player', 'assets/player/player_horse_sheet.png', { frameWidth: 325, frameHeight: 324 });
@@ -104,6 +112,7 @@ class HorseRunning extends Phaser.Scene {
     this.load.audio('horse-jump', 'assets/audio/horse-jump.wav');
     this.load.audio('goal', 'assets/audio/goal.wav');
     this.load.audio('background', 'assets/audio/background.mp3');
+    this.loadFont('MilkyNice', 'assets/fonts/MilkyNice.ttf');
     this.score = 0;
   }
 
@@ -114,8 +123,8 @@ class HorseRunning extends Phaser.Scene {
     this.frame = this.add.image(config.width / 2, config.height / 2, 'frame').setDisplaySize(config.width, config.height);
     this.frame.setScrollFactor(0);
 
-    this.scoreText = this.add.text(0, 0, ['Score : ' + this.score], { font: '64px Courier', fill: '#000000' });
-    this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { font: '128px Courier', fill: '#000000' });
+    this.scoreText = this.add.text(10, 0, ['Score : ' + this.score], { fontFamily: 'MilkyNice', fontSize: 64, color: '#000000' });
+    this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { fontFamily: 'MilkyNice', fontSize: 128, color: '#000000' });
     this.startText.setOrigin(0.5);
     this.startText.setInteractive();
 
@@ -132,7 +141,6 @@ class HorseRunning extends Phaser.Scene {
 
     this.player = this.physics.add.sprite(0.2 * config.width, config.height, 'player');
     this.player.setDisplaySize(config.width / 8, config.height / 5);
-    // this.player.setScale(0.25);
     this.player.setOrigin(0, 1);
     this.player.setSize(this.player.width / 2.5, this.player.height);
     this.player.setCollideWorldBounds(true);

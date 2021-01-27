@@ -200,6 +200,16 @@ class HorseRunning extends Phaser.Scene {
     this.physics.add.collider(this.player, this.enemyGroup, () => {
       this.gameStop();
     });
+
+    // event
+    this.game.events.addListener(Phaser.Core.Events.BLUR, () => {
+      this.backgroundAudio.pause();
+      this.horseRunAudio.pause();
+    });
+    this.game.events.addListener(Phaser.Core.Events.FOCUS, () => {
+      this.backgroundAudio.resume();
+      this.horseRunAudio.resume();
+    })
   }
 
   update() {
@@ -268,3 +278,9 @@ let config = {
 
 let game = new Phaser.Game(config);
 
+document.addEventListener("pause", () => {
+  game.sound.mute = true;
+}, false);
+document.addEventListener("resume", () => {
+  game.sound.mute = false;
+}, false);

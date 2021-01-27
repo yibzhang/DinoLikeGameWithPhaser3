@@ -17,6 +17,9 @@ class HorseRunning extends Phaser.Scene {
     this.timeCounter = 0;
     this.spawnTime = 200;
 
+    this.enemySpeed = 200;
+    this.playerSpeed = 450;
+
     this.horseRunAudio;
     this.horseDieAudio;
     this.horseJumpAudio;
@@ -59,7 +62,7 @@ class HorseRunning extends Phaser.Scene {
     for (var i = 0; i < enemies.length; i++) {
       if (counter < num && !enemies[i].body.velocity.x) {
         counter += 1;
-        enemies[i].setVelocityX(-400 - this.score * 5);
+        enemies[i].setVelocityX(-this.enemySpeed - this.score * 5);
       }
     }
   }
@@ -126,11 +129,6 @@ class HorseRunning extends Phaser.Scene {
     this.frame = this.add.image(config.width / 2, config.height / 2, 'frame').setDisplaySize(config.width, config.height);
     this.frame.setScrollFactor(0);
 
-    this.scoreText = this.add.text(10, 0, ['Score : ' + this.score], { fontFamily: 'MilkyNice', fontSize: 64, color: '#000000' });
-    this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { fontFamily: 'MilkyNice', fontSize: 128, color: '#000000' });
-    this.startText.setOrigin(0.5);
-    this.startText.setInteractive();
-
     this.mountains = this.add.tileSprite(0.5 * config.width, 0.4 * config.height, 0, 0, 'mountains').setDisplaySize(config.width, 0.5 * config.height);
     this.clouds = this.add.tileSprite(0.5 * config.width, 0.2 * config.height, 0, 0, 'cloud').setDisplaySize(config.width, 0.3 * config.height);
     this.grassGroup = this.add.group({ key: 'grass-small', repeat: 3 });
@@ -139,6 +137,11 @@ class HorseRunning extends Phaser.Scene {
       grass.x = Phaser.Math.RND.between(0, 10) / 10 * config.width;
       grass.y = Phaser.Math.RND.between(7, 9) / 10 * config.height;
     }, this)
+
+    this.scoreText = this.add.text(10, 0, ['Score : ' + this.score], { fontFamily: 'MilkyNice', fontSize: 64, color: '#000000' });
+    this.startText = this.add.text(config.width / 2, config.height / 2, 'START', { fontFamily: 'MilkyNice', fontSize: 128, color: '#000000' });
+    this.startText.setOrigin(0.5);
+    this.startText.setInteractive();
 
     this.enemyGroup = this.physics.add.group();
     // Initialize 10 enemies in the pool, velocity is 0
@@ -179,7 +182,7 @@ class HorseRunning extends Phaser.Scene {
       this.input.on('pointerdown', function () {
         if (this.player.body.blocked.down) {
           this.player.anims.play('jump');
-          this.player.setVelocityY(-800);
+          this.player.setVelocityY(-this.playerSpeed);
           this.horseJumpAudio.play();
           this.horseRunAudio.mute = true;
         }
@@ -229,7 +232,7 @@ class HorseRunning extends Phaser.Scene {
 
       // spawn enemies      
       if (this.timeCounter > this.spawnTime) {
-        this.spawnTime = 400 * Phaser.Math.RND.between(150, 200) / (400 + this.score * 5)
+        this.spawnTime = this.enemySpeed * Phaser.Math.RND.between(150, 200) / (this.enemySpeed + this.score * 5)
         this.timeCounter = 0;
         // set velocity for several enemies in the pool
         if (this.score < 5) { this.startEnemy(1) }
@@ -247,8 +250,8 @@ class HorseRunning extends Phaser.Scene {
 // config
 let config = {
   type: Phaser.AUTO,
-  width: 1920,
-  height: 1080,
+  width: 960,
+  height: 540,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
@@ -256,7 +259,7 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 1200 },
+      gravity: { y: 800 },
       debug: false,
     }
   },
